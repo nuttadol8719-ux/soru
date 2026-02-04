@@ -683,6 +683,27 @@ pvpTab:CreateSlider({
     end
 })
 
+pvpTab:CreateSlider({
+    Name = "⬅ Offset X",
+    Range = {-200, 200},
+    Increment = 5,
+    CurrentValue = OffsetX,
+    Callback = function(v)
+        OffsetX = v
+    end
+})
+
+pvpTab:CreateSlider({
+    Name = "⬆ Offset Y",
+    Range = {-200, 200},
+    Increment = 5,
+    CurrentValue = OffsetY,
+    Callback = function(v)
+        OffsetY = v
+    end
+})
+
+
 --=============================
 -- 🎯 FIND TARGET
 --=============================
