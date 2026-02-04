@@ -617,7 +617,7 @@ local function CanSeeTarget(targetHRP)
 end
 
 --=============================
--- ⭕ FOV CIRCLE + OFFSET (PC + MOBILE FIX)
+-- ⭕ FOV CIRCLE + OFFSET FIX (NO MODE ERROR)
 --=============================
 
 local gui = Instance.new("ScreenGui")
@@ -641,30 +641,11 @@ corner.CornerRadius = UDim.new(1, 0)
 corner.Parent = circle
 
 --=============================
--- 🎯 OFFSET SYSTEM
+-- 🎯 OFFSET FIXED
 --=============================
 
 local OffsetX = 0
-local OffsetY = 0
-local Mode = "PC"
-
-local Presets = {
-    PC = {x = 0, y = 0},
-    Mobile = {x = 0, y = 70},
-}
-
-local function ApplyPreset(name)
-    Mode = name
-    OffsetX = Presets[name].x
-    OffsetY = Presets[name].y
-end
-
--- Auto Detect Device
-if UIS.TouchEnabled and not UIS.KeyboardEnabled then
-    ApplyPreset("Mobile")
-else
-    ApplyPreset("PC")
-end
+local OffsetY = -55 -- ✅ ตรงทั้งมือถือ + คอมของมึง
 
 -- Update Size
 local function UpdateCircle()
@@ -690,47 +671,6 @@ pvpTab:CreateToggle({
         circle.Visible = v
     end
 })
-
-pvpTab:CreateSlider({
-    Name = "📌 FOV Size",
-    Range = {50, 500},
-    Increment = 10,
-    CurrentValue = AimFOV,
-    Callback = function(v)
-        AimFOV = v
-        UpdateCircle()
-    end
-})
-
-pvpTab:CreateDropdown({
-    Name = "🎮 Aim Mode",
-    Options = {"PC", "Mobile"},
-    CurrentOption = Mode,
-    Callback = function(v)
-        ApplyPreset(v)
-    end
-})
-
-pvpTab:CreateSlider({
-    Name = "⬅ Offset X Fine",
-    Range = {-200, 200},
-    Increment = 5,
-    CurrentValue = OffsetX,
-    Callback = function(v)
-        OffsetX = v
-    end
-})
-
-pvpTab:CreateSlider({
-    Name = "⬆ Offset Y Fine",
-    Range = {-200, 200},
-    Increment = 5,
-    CurrentValue = OffsetY,
-    Callback = function(v)
-        OffsetY = v
-    end
-})
-
 
 --=============================
 -- 🎯 FIND TARGET
@@ -928,35 +868,12 @@ pvpTab:CreateToggle({
     end
 })
 
-pvpTab:CreateToggle({
-    Name = "⭕ แสดง FOV",
-    CurrentValue = false,
-    Callback = function(v)
-        circle.Visible = v
-    end
-})
-
-pvpTab:CreateSlider({
-    Name = "📌 ขนาด FOV",
-    Range = {10, 500},
-    Increment = 10,
-    Suffix = "px",
-    CurrentValue = 100,
-    Callback = function(v)
-        AimFOV = v
-        UpdateCircle()
-    end
-})
-
 pvpTab:CreateButton({
     Name = "🚫 ไม่ล็อก",
     Callback = function()
         OpenIgnoreMenu()
     end
 })
-
-
-
 
 pvpTab:CreateButton({
     Name = "⚡ เปิด SORU (ลาก + กดค้าง)",
