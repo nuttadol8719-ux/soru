@@ -7,7 +7,7 @@
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
 local Window = Rayfield:CreateWindow({
-    Name = "fruits battleground update1.4(pvp🔥)",
+    Name = "fruits battleground update1.5(aimbot🔥)",
      LoadingTitle = "update",
     LoadingSubtitle = "by pond",
     ConfigurationSaving = {
@@ -646,7 +646,7 @@ end
 RunService.RenderStepped:Connect(function()
     circle.Position = UDim2.fromOffset(
         Camera.ViewportSize.X / 2,
-        Camera.ViewportSize.Y / 2
+        Camera.ViewportSize.Y / 2.247
     )
 end)
 
@@ -838,7 +838,7 @@ end
 --=============================
 
 pvpTab:CreateToggle({
-    Name = "🎯 Aim Lock",
+    Name = "🎯 ล็อกเป้า",
     CurrentValue = false,
     Callback = function(v)
         AimlockEnabled = v
@@ -847,7 +847,7 @@ pvpTab:CreateToggle({
 })
 
 pvpTab:CreateToggle({
-    Name = "⭕ Show FOV Circle",
+    Name = "⭕ แสดง FOV",
     CurrentValue = false,
     Callback = function(v)
         circle.Visible = v
@@ -855,11 +855,11 @@ pvpTab:CreateToggle({
 })
 
 pvpTab:CreateSlider({
-    Name = "📌 FOV Size",
-    Range = {50, 500},
+    Name = "📌 ขนาด FOV",
+    Range = {10, 500},
     Increment = 10,
     Suffix = "px",
-    CurrentValue = 150,
+    CurrentValue = 100,
     Callback = function(v)
         AimFOV = v
         UpdateCircle()
@@ -867,7 +867,7 @@ pvpTab:CreateSlider({
 })
 
 pvpTab:CreateButton({
-    Name = "🚫 Ignore Player Menu",
+    Name = "🚫 ไม่ล็อก",
     Callback = function()
         OpenIgnoreMenu()
     end
