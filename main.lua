@@ -7,7 +7,7 @@
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
 local Window = Rayfield:CreateWindow({
-    Name = "fruits battleground update1.5(aimbot🔥)",
+    Name = "fruits battleground update1.4(pvp🔥)",
      LoadingTitle = "update",
     LoadingSubtitle = "by pond",
     ConfigurationSaving = {
@@ -570,8 +570,8 @@ pvpTab:CreateToggle({
 })
 
 --====================================
--- 🎯 AIMLOCK PRO FULL FIXED (CENTER HEAD)
--- FOV + WALLCHECK + IGNORE MENU + DRAG UI
+-- 🎯 AIMLOCK PRO FULL (DELTA READY)
+-- FOV + WALLCHECK + IGNORE MENU DRAG + TOGGLE
 --====================================
 
 local Players = game:GetService("Players")
@@ -585,6 +585,7 @@ local lp = Players.LocalPlayer
 --=============================
 local AimlockEnabled = false
 local AimFOV = 150
+local AimTarget = nil
 
 --=============================
 -- 🚫 IGNORE BLACKLIST
@@ -598,9 +599,9 @@ end
 --=============================
 -- 🔥 WALL CHECK
 --=============================
-local function CanSeeTarget(targetPart)
+local function CanSeeTarget(targetHRP)
     local origin = Camera.CFrame.Position
-    local direction = (targetPart.Position - origin)
+    local direction = (targetHRP.Position - origin)
 
     local params = RaycastParams.new()
     params.FilterType = Enum.RaycastFilterType.Blacklist
@@ -609,14 +610,14 @@ local function CanSeeTarget(targetPart)
     local result = workspace:Raycast(origin, direction, params)
 
     if result then
-        return result.Instance:IsDescendantOf(targetPart.Parent)
+        return result.Instance:IsDescendantOf(targetHRP.Parent)
     end
 
     return false
 end
 
 --=============================
--- ⭕ FOV CIRCLE UI (CENTER FIX)
+-- ⭕ FOV CIRCLE UI
 --=============================
 local gui = Instance.new("ScreenGui")
 gui.Name = "FOVCircleUI"
@@ -624,6 +625,7 @@ gui.ResetOnSpawn = false
 gui.Parent = lp:WaitForChild("PlayerGui")
 
 local circle = Instance.new("Frame")
+circle.Size = UDim2.fromOffset(AimFOV * 2, AimFOV * 2)
 circle.AnchorPoint = Vector2.new(0.5, 0.5)
 circle.BackgroundTransparency = 1
 circle.Visible = false
@@ -640,7 +642,6 @@ corner.Parent = circle
 local function UpdateCircle()
     circle.Size = UDim2.fromOffset(AimFOV * 2, AimFOV * 2)
 end
-UpdateCircle()
 
 RunService.RenderStepped:Connect(function()
     circle.Position = UDim2.fromOffset(
@@ -650,20 +651,20 @@ RunService.RenderStepped:Connect(function()
 end)
 
 --=============================
--- 🎯 FIND CLOSEST PLAYER (HEAD CENTER)
+-- 🎯 FIND TARGET
 --=============================
 local function GetClosestTarget()
-    local closestPlr = nil
+    local closest = nil
     local shortest = math.huge
 
-    for _, plr in pairs(Players:GetPlayers()) do
+    for _,plr in pairs(Players:GetPlayers()) do
         if plr ~= lp and not IsBlacklisted(plr) then
             local char = plr.Character
-            local head = char and char:FindFirstChild("Head")
+            local hrp = char and char:FindFirstChild("HumanoidRootPart")
             local hum = char and char:FindFirstChild("Humanoid")
 
-            if head and hum and hum.Health > 0 then
-                local pos, onScreen = Camera:WorldToViewportPoint(head.Position)
+            if hrp and hum and hum.Health > 0 then
+                local pos, onScreen = Camera:WorldToViewportPoint(hrp.Position)
 
                 if onScreen then
                     local dist =
@@ -671,9 +672,9 @@ local function GetClosestTarget()
                         Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)).Magnitude
 
                     if dist < AimFOV and dist < shortest then
-                        if CanSeeTarget(head) then
+                        if CanSeeTarget(hrp) then
                             shortest = dist
-                            closestPlr = plr
+                            closest = hrp
                         end
                     end
                 end
@@ -681,31 +682,27 @@ local function GetClosestTarget()
         end
     end
 
-    return closestPlr
+    return closest
 end
 
 --=============================
--- 🔥 AIMLOCK LOOP (LOCK HEAD CENTER)
+-- 🔥 AIMLOCK LOOP
 --=============================
 RunService.RenderStepped:Connect(function()
     if not AimlockEnabled then return end
 
-    local targetPlr = GetClosestTarget()
+    AimTarget = GetClosestTarget()
 
-    if targetPlr and targetPlr.Character then
-        local head = targetPlr.Character:FindFirstChild("Head")
-
-        if head then
-            Camera.CFrame = Camera.CFrame:Lerp(
-                CFrame.new(Camera.CFrame.Position, head.Position),
-                0.25
-            )
-        end
+    if AimTarget then
+        Camera.CFrame = CFrame.new(
+            Camera.CFrame.Position,
+            AimTarget.Position
+        )
     end
 end)
 
 --=============================
--- 🚫 IGNORE MENU (CLICK = IGNORE/UNIGNORE)
+-- 🚫 IGNORE MENU (DRAG + IGNORE/UNIGNORE)
 --=============================
 local IgnoreUI = nil
 
@@ -736,7 +733,7 @@ local function OpenIgnoreMenu()
     local title = Instance.new("TextLabel", dragBar)
     title.Size = UDim2.new(1,0,1,0)
     title.BackgroundTransparency = 1
-    title.Text = "🚫 Ignore Players"
+    title.Text = "🚫 Select Player"
     title.TextColor3 = Color3.fromRGB(255,255,255)
     title.Font = Enum.Font.GothamBold
     title.TextScaled = true
@@ -769,7 +766,7 @@ local function OpenIgnoreMenu()
         end
     end)
 
-    -- PLAYER LIST
+    -- SCROLL LIST
     local scroll = Instance.new("ScrollingFrame", frame)
     scroll.Size = UDim2.new(1,-20,1,-90)
     scroll.Position = UDim2.new(0,10,0,45)
@@ -795,10 +792,10 @@ local function OpenIgnoreMenu()
         IgnoreUI = nil
     end)
 
-    -- ADD PLAYERS
+    -- PLAYER BUTTONS
     local count = 0
 
-    for _, plr in pairs(Players:GetPlayers()) do
+    for _,plr in pairs(Players:GetPlayers()) do
         if plr ~= lp then
             count += 1
 
@@ -837,14 +834,15 @@ local function OpenIgnoreMenu()
 end
 
 --=============================
--- UI BUTTONS (RAYFIELD)
+-- UI BUTTONS (Rayfield)
 --=============================
 
 pvpTab:CreateToggle({
-    Name = "🎯 Aim Lock (Head Center)",
+    Name = "🎯 Aim Lock",
     CurrentValue = false,
     Callback = function(v)
         AimlockEnabled = v
+        if not v then AimTarget = nil end
     end
 })
 
@@ -874,6 +872,8 @@ pvpTab:CreateButton({
         OpenIgnoreMenu()
     end
 })
+
+
 
 
 pvpTab:CreateButton({
