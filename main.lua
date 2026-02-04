@@ -672,6 +672,17 @@ pvpTab:CreateToggle({
     end
 })
 
+pvpTab:CreateSlider({
+    Name = "📌 FOV Size",
+    Range = {50, 500},
+    Increment = 10,
+    CurrentValue = AimFOV,
+    Callback = function(v)
+        AimFOV = v
+        UpdateCircle()
+    end
+})
+
 --=============================
 -- 🎯 FIND TARGET
 --=============================
