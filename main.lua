@@ -617,8 +617,9 @@ local function CanSeeTarget(targetHRP)
 end
 
 --=============================
--- ⭕ FOV CIRCLE UI
+-- ⭕ FOV CIRCLE + OFFSET (PC + MOBILE FIX)
 --=============================
+
 local gui = Instance.new("ScreenGui")
 gui.Name = "FOVCircleUI"
 gui.ResetOnSpawn = false
@@ -639,16 +640,97 @@ local corner = Instance.new("UICorner")
 corner.CornerRadius = UDim.new(1, 0)
 corner.Parent = circle
 
+--=============================
+-- 🎯 OFFSET SYSTEM
+--=============================
+
+local OffsetX = 0
+local OffsetY = 0
+local Mode = "PC"
+
+local Presets = {
+    PC = {x = 0, y = 0},
+    Mobile = {x = 0, y = 70},
+}
+
+local function ApplyPreset(name)
+    Mode = name
+    OffsetX = Presets[name].x
+    OffsetY = Presets[name].y
+end
+
+-- Auto Detect Device
+if UIS.TouchEnabled and not UIS.KeyboardEnabled then
+    ApplyPreset("Mobile")
+else
+    ApplyPreset("PC")
+end
+
+-- Update Size
 local function UpdateCircle()
     circle.Size = UDim2.fromOffset(AimFOV * 2, AimFOV * 2)
 end
 
+-- Update Position Always
 RunService.RenderStepped:Connect(function()
     circle.Position = UDim2.fromOffset(
-        Camera.ViewportSize.X / 2,
-        Camera.ViewportSize.Y / 2.247
+        (Camera.ViewportSize.X / 2) + OffsetX,
+        (Camera.ViewportSize.Y / 2) + OffsetY
     )
 end)
+
+--=============================
+-- ✅ UI CONTROLS
+--=============================
+
+pvpTab:CreateToggle({
+    Name = "⭕ Show FOV Circle",
+    CurrentValue = false,
+    Callback = function(v)
+        circle.Visible = v
+    end
+})
+
+pvpTab:CreateSlider({
+    Name = "📌 FOV Size",
+    Range = {50, 500},
+    Increment = 10,
+    CurrentValue = AimFOV,
+    Callback = function(v)
+        AimFOV = v
+        UpdateCircle()
+    end
+})
+
+pvpTab:CreateDropdown({
+    Name = "🎮 Aim Mode",
+    Options = {"PC", "Mobile"},
+    CurrentOption = Mode,
+    Callback = function(v)
+        ApplyPreset(v)
+    end
+})
+
+pvpTab:CreateSlider({
+    Name = "⬅ Offset X Fine",
+    Range = {-200, 200},
+    Increment = 5,
+    CurrentValue = OffsetX,
+    Callback = function(v)
+        OffsetX = v
+    end
+})
+
+pvpTab:CreateSlider({
+    Name = "⬆ Offset Y Fine",
+    Range = {-200, 200},
+    Increment = 5,
+    CurrentValue = OffsetY,
+    Callback = function(v)
+        OffsetY = v
+    end
+})
+
 
 --=============================
 -- 🎯 FIND TARGET
